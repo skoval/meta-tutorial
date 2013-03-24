@@ -190,9 +190,9 @@ Colditz GA, et al. Efficacy of BCG vaccine in the prevention of tuberculosis. JA
 
 Summary treatment effect:
 
-<math>
+$$
 \hat{\mu} = \sum W_i Y_i /\sum W_i
-</math>
+$$
 
 Variance of treatment effect:
 
