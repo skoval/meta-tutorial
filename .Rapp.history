@@ -1,0 +1,1106 @@
+ry$Wins[ry$surface=="Hard"]
+sum(ry$Wins[ry$Surface=="Hard"])
+sum(ry$Wins[ry$Surface=="Hard"])/(sum(ry$Wins[ry$Surface=="Hard"])+sum(ry$Losses[ry$Surface=="Hard"]))
+gi <- QueryPlayingActivity("Santiago Giraldo",2012)
+gi
+sum(gi$Wins[gi$Surface=="Hard"])/(sum(gi$Wins[gi$Surface=="Hard"])+sum(gi$Losses[ry$Surface=="Hard"]))
+sum(gi$Wins[gi$Surface=="Clay"])/(sum(gi$Wins[gi$Surface=="Clay"])+sum(gi$Losses[ry$Surface=="Clay"]))
+sum(ry$Wins[ry$Surface=="Clay"])/(sum(ry$Wins[ry$Surface=="Clay"])+sum(ry$Losses[ry$Surface=="Clay"]))
+sum(gi$Wins[gi$Surface=="Clay"])/(sum(gi$Wins[gi$Surface=="Clay"])+sum(gi$Losses[gi$Surface=="Clay"]))
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))
+head(playres)
+head(players)
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))#
+#
+prob.hard.court <- sapply(players$Player, function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+sum(data$Wins[data$Surface=="Hard"])/sum(data$Total[data$Surface=="Hard"])#
+})
+prob.hard.court <- sapply(players$Player, function(name){#
+	print(name)#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+sum(data$Wins[data$Surface=="Hard"])/sum(data$Total[data$Surface=="Hard"])#
+})
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))#
+#
+prob.hard.court <- sapply(players$Player, function(name){#
+	print(name)#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+sum(data$Wins[data$Surface=="Hard"])/sum(data$Total[data$Surface=="Hard"])#
+})
+quit("no")
+Australian Open 2013 Draw Difficulty#
+#
+library(ATP)#
+#
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))#
+#
+prob.hard.court <- sapply(players$Player, function(name){#
+	print(name)#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+sum(data$Wins[data$Surface=="Hard"])/sum(data$Total[data$Surface=="Hard"])#
+})
+PLAYING ACTIVITY#
+#
+PlayingTopPlayerUrl <- function(Name, Year)#
+	paste("http://www.atpworldtour.com/Tennis/Players/Top-Players/",#
+											 Name,".aspx?t=pa&y=",Year,"&m=s&e=0#",sep="")#
+PlayingOtherPlayerUrl <- function(Name, Year){#
+	base <-  paste("http://www.atpworldtour.com/Tennis/Players/Last/First/Name.aspx?t=pa&y=",#
+								Year,"&m=s&e=0#",sep="")#
+#
+	base <- sub("Name",Name, base)#
+	Last.First <- strsplit(Name,split="-")[[1]]#
+	First <- substr(Last.First[1],1,1)#
+	last.index <- length(Last.First)#
+#	if(any(Name==NameExceptions)) last.index <- 2#
+	Last <- substr(Last.First[last.index],1,2) # CHECK FOR SUFFIX#
+	base <- sub("Last", Last, base)#
+	base <- sub("First", First, base)#
+	base <- sub("Name",gsub("?","-",Name,fixed=TRUE), base)#
+#
+base	#
+}#
+#
+Surface <- function(string)	{#
+	if(length(grep("Hard",string))==1)	#
+		"Hard"#
+	else if	(length(grep("Grass",string))==1)	#
+		"Grass"#
+	else#
+		"Clay"	#
+}	#
+#
+Surface <- Vectorize(Surface)									 #
+#
+Losses <- function(Lines, Start, Stop) length(grep("L&",Lines[Start:Stop]))#
+Wins <- function(Lines, Start, Stop) {#
+	length(grep("W&",Lines[Start:Stop]))-length(grep("Bye",Lines[Start:Stop]))#
+	}#
+#
+QueryPlayingActivity <- function(Name, Year){#
+	Name <- gsub(" ","-",Name)#
+	call <- PlayingTopPlayerUrl(Name, Year)#
+	call <- url(call)#
+	PlayingPage <- tryCatch(readLines(call, #
+													ok=TRUE, #
+													warn=FALSE, #
+													encoding="UTF-8")#
+													,warning=function(x){NA},#
+													error=function(x){NA})#
+#
+	close(call)#
+	if(is.na(PlayingPage[1])){#
+		call <- PlayingOtherPlayerUrl(Name, Year)#
+		call <- url(call)#
+		PlayingPage <- readLines(call, #
+													ok=TRUE, #
+													warn=FALSE, #
+													encoding="UTF-8")#
+	   close(call)#
+	}#
+	StrYear <- paste(".",Year,";",sep="")#
+	Tournaments <- grep(StrYear, PlayingPage, fixed=TRUE)#
+	EventPoints <- grep("This Event Points", PlayingPage)#
+#
+	if(length(Tournaments)!=length(EventPoints)){#
+			StrYear <- paste(".",as.numeric(Year)-1,";",sep="")#
+			Tournaments <- sort(c(Tournaments,grep(StrYear, PlayingPage, fixed=TRUE)))#
+	}#
+	Date <- sub("(.*;)([0-9][0-9]\\.[0-9][0-9]\\.[0-9][0-9][0-9][0-9])(;.*)","\\2", PlayingPage[Tournaments])#
+	TournamentNames <- sub("(.*<strong>)(.*)(</strong>.*)","\\2", PlayingPage[Tournaments])#
+	Result <- sub("(.*<td>)(.*)(</td>.*)","\\2",PlayingPage[EventPoints-14])#
+	Start <- Tournaments#
+	Stop <-  EventPoints#
+	W <- mapply(Wins, Start=Start, Stop=Stop, MoreArgs=list(Lines = PlayingPage))#
+	L <- mapply(Losses, Start=Start, Stop=Stop,  MoreArgs=list(Lines = PlayingPage))#
+	AsDate <- as.Date(Date, "%d.%m.%Y")#
+	Dates <- strsplit(Date, split=".", fixed=TRUE)#
+	Day <- as.numeric(sapply(Dates, function(x) x[1]))#
+	Month <- as.numeric(sapply(Dates, function(x) x[2]))#
+	Year <- as.numeric(sapply(Dates, function(x) x[3]))#
+#
+	Playing <- data.frame(#
+		Day = Day,#
+		Month = Month,#
+		Year = Year,#
+		Date = AsDate,#
+		Tournament = TournamentNames,#
+		Result = Result,#
+		Wins = W,#
+		Losses = L,#
+		Surface = as.character(Surface(PlayingPage[Tournaments]))#
+)#
+#
+Playing#
+}
+PlayingOtherPlayerUrl("Arnau Brugues?Davi",2012)
+PlayingOtherPlayerUrl <- function(Name, Year){#
+	base <-  paste("http://www.atpworldtour.com/Tennis/Players/Last/First/Name.aspx?t=pa&y=",#
+								Year,"&m=s&e=0#",sep="")#
+#
+#	base <- sub("Name",Name, base)#
+	Last.First <- strsplit(Name,split="-")[[1]]#
+	First <- substr(Last.First[1],1,1)#
+	last.index <- length(Last.First)#
+#	if(any(Name==NameExceptions)) last.index <- 2#
+	Last <- substr(Last.First[last.index],1,2) # CHECK FOR SUFFIX#
+	base <- sub("Last", Last, base)#
+	base <- sub("First", First, base)#
+	base <- sub("Name",gsub("?","-",Name,fixed=TRUE), base)#
+#
+base	#
+}
+PlayingOtherPlayerUrl("Arnau Brugues?Davi",2012)
+quit("no")
+library(ATP)#
+#
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))
+QueryPlayingActivity("Novak Djokovic",2011)
+prob.hard.court <- sapply(players$Player, function(name){#
+	data2012 <- QueryPlayingActivity(name, 2012)#
+	data2011 <- QueryPlayingActivity(name, 2011)#
+	data <- rbind(data2012, data2011)#
+	data$Total <- data$Wins+data$Losses#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters",data$Tournament)#
+	if(length(Masters)==0){#
+		0#
+	}#
+	else{#
+		data <- data[Masters,] #Restrict to Masters#
+		if(!any(data$Surface=="Hard")){#
+			0#
+		}#
+	else{#
+		sum(data$Wins[data$Surface=="Hard"])/sum(data$Total[data$Surface=="Hard"])#
+	}#
+ }#
+})#
+#
+players$prob.loss <- 1-prob.hard.court
+o1 <- order(players$Seed[players$Seeded==1&players$Quarter==1])#
+o2 <- order(players$Seed[players$Seeded==1&players$Quarter==2])#
+o3 <- order(players$Seed[players$Seeded==1&players$Quarter==3])#
+o4 <- order(players$Seed[players$Seeded==1&players$Quarter==4])#
+#
+players[players$Quarter==1,][o1[1:4],]
+players[players$Quarter==1&players$Seeded=1,][o1[1:4],]
+players[players$Quarter==1&players$Seeded==1,][o1[1:4],]
+players[players$Quarter==2&players$Seeded==1,][o2[1:4],]#
+players[players$Quarter==3&players$Seeded==1,][o3[1:4],]#
+players[players$Quarter==4&players$Seeded==1,][o4[1:4],]
+128-32
+rbind(players[players$Quarter==1&players$Seeded==1,][o1[1:4],], players[2:4,])#
+rbind(players[players$Quarter==2&players$Seeded==1,][o2[1:4],], players[34:36,])#
+rbind(players[players$Quarter==3&players$Seeded==1,][o3[1:4],], players[93:95,])#
+rbind(players[players$Quarter==4&players$Seeded==1,][o4[1:4],], players[125:127,])
+q1 <- rbind(players[players$Quarter==1&players$Seeded==1,][o1[1:4],], players[2:4,])#
+q2 <- rbind(players[players$Quarter==2&players$Seeded==1,][o2[1:4],], players[34:36,])#
+q3 <- rbind(players[players$Quarter==3&players$Seeded==1,][o3[1:4],], players[93:95,])#
+q4 <- rbind(players[players$Quarter==4&players$Seeded==1,][o4[1:4],], players[125:127,])#
+#
+prod(q1[-1])#
+prod(q2[-1])#
+prod(q3[-1])#
+prod(q4[-1])
+prod(q1$prob[-1])
+prod(q1$prob[-1])#
+prod(q2$prob[-1])#
+prod(q3$prob[-1])#
+prod(q4$prob[-1])
+mean(q1$prob[-1])#
+mean(q2$prob[-1])#
+mean(q3$prob[-1])#
+mean(q4$prob[-1])
+prod(q1$prob[2:4])#
+prod(q2$prob[2:4])#
+prod(q3$prob[2:4])#
+prod(q4$prob[2:4])
+q1
+prod(q1$prob[5:7])
+prod(q2$prob[5:7])
+prod(q3$prob[5:7])
+prod(q4$prob[5:7])
+prod(q1$prob[2:4])*3/4+1/4*prod(q1$prob[5:7])#
+prod(q2$prob[2:4])*3/4+1/4*prod(q2$prob[5:7])#
+prod(q3$prob[2:4])*3/4+1/4*prod(q3$prob[5:7])#
+prod(q4$prob[2:4])*3/4+1/4*prod(q4$prob[5:7])
+q1
+q4
+QueryPlayingActivity("Santiago Giraldo",2012)
+quit("no")
+Australian Open 2013 Draw Difficulty#
+#
+library(ATP)#
+#
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))#
+#
+prob.hard.court <- sapply(players$Player, function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+#	data2011 <- QueryPlayingActivity(name, 2011)#
+#	data <- rbind(data2012, data2011)#
+	data$Total <- data$Wins+data$Losses#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters",data$Tournament)#
+	if(length(Masters)==0){#
+		0#
+	}#
+	else{#
+		data <- data[Masters,] #Restrict to Masters#
+		if(!any(data$Surface=="Hard")){#
+			0#
+		}#
+	else{#
+		sum(data$Wins[data$Surface=="Hard"])/sum(data$Total[data$Surface=="Hard"])#
+	}#
+ }#
+})#
+#
+players$prob.loss <- 1-prob.hard.court#
+#
+o1 <- order(players$Seed[players$Seeded==1&players$Quarter==1])#
+o2 <- order(players$Seed[players$Seeded==1&players$Quarter==2])#
+o3 <- order(players$Seed[players$Seeded==1&players$Quarter==3])#
+o4 <- order(players$Seed[players$Seeded==1&players$Quarter==4])#
+#
+q1 <- rbind(players[players$Quarter==1&players$Seeded==1,][o1[1:4],], players[2:4,])#
+q2 <- rbind(players[players$Quarter==2&players$Seeded==1,][o2[1:4],], players[34:36,])#
+q3 <- rbind(players[players$Quarter==3&players$Seeded==1,][o3[1:4],], players[93:95,])#
+q4 <- rbind(players[players$Quarter==4&players$Seeded==1,][o4[1:4],], players[125:127,])#
+#
+prod(q1$prob[2:4])#
+prod(q1$prob[5:7])#
+#
+prod(q2$prob[2:4])#
+prod(q2$prob[5:7])#
+#
+prod(q3$prob[2:4])#
+prod(q3$prob[5:7])#
+#
+prod(q4$prob[2:4])#
+prod(q4$prob[5:7])
+sum(q1$prob[2:4])
+prod(q1$prob[2:4])#
+sum(q1$Seed[2:4])#
+prod(q1$prob[5:7])#
+#
+prod(q2$prob[2:4])#
+sum(q2$Seed[2:4])#
+prod(q2$prob[5:7])#
+#
+prod(q3$prob[2:4])#
+sum(q3$Seed[2:4])#
+prod(q3$prob[5:7])#
+#
+prod(q4$prob[2:4])#
+sum(q4$Seed[2:4])#
+prod(q4$prob[5:7])
+q1
+q4
+QueryPlayingActivity("Stanislaw Wawrinka",2012)
+QueryPlayingActivity("Stanislas Wawrinka",2012)
+players[players$Quartet==1,]
+players[players$Quarter==1,]
+quit("no")
+library(ATP)#
+#
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))#
+#
+prob.hard.court <- sapply(players$Player, function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+#	data2011 <- QueryPlayingActivity(name, 2011)#
+#	data <- rbind(data2012, data2011)#
+	data$Total <- data$Wins+data$Losses#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters",data$Tournament)#
+	if(length(Masters)==0){#
+		0#
+	}#
+	else{#
+		data <- data[Masters,] #Restrict to Masters#
+		if(!any(data$Surface=="Hard")){#
+			0#
+		}#
+	else{#
+		sum(data$Wins[data$Surface=="Hard"])/sum(data$Total[data$Surface=="Hard"])#
+	}#
+ }#
+})#
+#
+players$prob.loss <- 1-prob.hard.court
+index <- c(which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==2&players$Seed==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==3&players$Seed==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==4&players$Seed==1])))
+head(players)
+index <- c(which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==4&players$Seeded==1])))
+players[players$Quarter==1,][index,]
+index1 <- c(which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==4&players$Seeded==1])))#
+#
+index2 <- c(which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==4&players$Seeded==1])))#
+index3 <- c(which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==4&players$Seeded==1])))#
+#
+index4 <- c(which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==4&players$Seeded==1])))#
+#
+players[players$Quarter==1,][index1,]#
+players[players$Quarter==2,][index2,]#
+players[players$Quarter==3,][index3,]#
+players[players$Quarter==4,][index4,]
+players[players$Quarter==2,]
+q1 <- players[players$Quarter==1,][index1,]#
+q2 <- players[players$Quarter==2,][index2,]#
+q3 <- players[players$Quarter==3,][index3,]#
+q4 <- players[players$Quarter==4,][index4,]
+q1 <- players[players$Quarter==1,][index1,]#
+q2 <- players[players$Quarter==2,][index2,]#
+q3 <- players[players$Quarter==3,][index3,]#
+q4 <- players[players$Quarter==4,][index4,]#
+sum(q1$Seed)#
+prod(q1$prob)#
+#
+sum(q2$Seed)#
+prod(q2$prob)#
+#
+sum(q3$Seed)#
+prod(q3$prob)#
+#
+sum(q4$Seed)#
+prod(q4$prob)
+q4
+q1
+temp <- subset(players, Seed==1)
+cor(temp$seed, 1-temp$prob)
+cor(temp$Seed, 1-temp$prob)
+temp
+temp <- subset(players, Seeded==1)
+cor(temp$Seed, 1-temp$prob)
+temo <- QueryPlayingActicity("Novak Djokovic",2012)
+temp <- QueryPlayingActivity("Novak Djokovic",2012)
+Masters <- grep("Masters",temp$Tournament)
+temp[Masters,]
+temp
+players <- players[players$Seeded==1,]#
+#
+Activity <- lapply(players$Player, function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+#	data2011 <- QueryPlayingActivity(name, 2011)#
+#	data <- rbind(data2012, data2011)#
+	data$Total <- data$Wins+data$Losses#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})
+length(Activity)
+Activity[[1]]
+Activity[[2]]
+Activity <- rbind(Activity[[1]],Activity[[2]],Activity[[3]],Activity[[4]],Activity[[5]],#
+				  Activity[[6]],Activity[[7]],Activity[[8]],Activity[[9]],Activity[[10]],#
+				  Activity[[11]],Activity[[12]],Activity[[13]],Activity[[14]],Activity[[15]],#
+				  Activity[[16]],Activity[[17]],Activity[[18]],Activity[[19]],Activity[[20]],#
+				  Activity[[21]],Activity[[22]],Activity[[23]],Activity[[24]],Activity[[25]],#
+				  Activity[[26]],Activity[[27]],Activity[[28]],Activity[[29]],Activity[[30]],#
+				  Activity[[31]],Activity[[32]])
+head(Activity)
+Activity$Prob <- Activity$Wins/Activity$Total
+Activity <- Activity[order(Activity$Tournament),]
+head(Activity)
+Canada <- Activity[grep("Canada",Activity$Tournament),]
+Oz <- Activity[grep("Australian",Activity$Tournament),]
+nrow(Oz)
+nrow(Canada)
+Miami <- Activity[grep("Miami",Activity$Tournament),]
+nrow(Miami)
+cor(Miami$Prob, Oz$Prob)
+Miami
+Oz
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))#
+#
+players <- players[players$Seeded==1,]#
+#
+Activity <- lapply(players$Player, function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+#	data2011 <- QueryPlayingActivity(name, 2011)#
+#	data <- rbind(data2012, data2011)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})#
+#
+Activity <- rbind(Activity[[1]],Activity[[2]],Activity[[3]],Activity[[4]],Activity[[5]],#
+				  Activity[[6]],Activity[[7]],Activity[[8]],Activity[[9]],Activity[[10]],#
+				  Activity[[11]],Activity[[12]],Activity[[13]],Activity[[14]],Activity[[15]],#
+				  Activity[[16]],Activity[[17]],Activity[[18]],Activity[[19]],Activity[[20]],#
+				  Activity[[21]],Activity[[22]],Activity[[23]],Activity[[24]],Activity[[25]],#
+				  Activity[[26]],Activity[[27]],Activity[[28]],Activity[[29]],Activity[[30]],#
+				  Activity[[31]],Activity[[32]])#
+#
+Activity$Prob <- Activity$Wins/Activity$Total					#
+Activity <- Activity[order(Activity$Tournament),]
+Oz <- Activity[grep("Australian Open",Activity$Tournament),]
+head(Oz)
+US <- Activity[grep("US Open",Activity$Tournament),]
+nrow(US)
+US
+Oz
+grep(paste(Oz$Player,sep="|"),US$Player)
+grep(paste(Oz$Player,sep="|",collapse=""),US$Player)
+paste(Oz$Player,sep="|",collapse="")
+grep(paste(Oz$Player,sep="",collapse="|"),US$Player)
+US[index,]
+index <- grep(paste(Oz$Player,sep="",collapse="|"),US$Player)
+US[index,]
+cor(Oz$Prob, US$Prob[index])
+RG <- Activity[grep("Roland",Activity$Tournament),]
+index <- grep(paste(Oz$Player,sep="",collapse="|"),RG$Player)
+length(index)
+index1 <- grep(paste(Oz$Player,sep="",collapse="|"),RG$Player)#
+index2 <- grep(paste(RG$Player,sep="",collapse="|"),Oz$Player)
+Oz$Player[index2]
+RG$Player[index1]
+cor(Oz$Prob[index2], RG$Prob[index1])
+help(package="ATP")
+library(ATP)#
+data(players)
+head(players)
+Activity <- lapply(players$player[1:50], function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})
+QueryPlayingActivity("Robin Soderling",2012)
+grep("Robin",players$player)
+grep("Robin Soderling",players$player)
+players <- players[-grep("Robin Soderling",players$player),]#
+#
+Activity <- lapply(players$player[1:100], function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})
+Activity <- lapply(players$player[1:100], function(name){#
+	print(name)#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})
+players <- players[-grep("Robin Soderling",players$player),]#
+players$player[-grep("Edouard Roger-Vasselin",players$player)] <- "Edouard Roger?Vasselin"#
+#
+Activity <- lapply(players$player[1:100], function(name){#
+	print(name)#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})
+players$player[grep("Edouard Roger-Vasselin",players$player)] <- "Edouard Roger?Vasselin"
+Activity <- lapply(players$player[1:100], function(name){#
+	print(name)#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})
+data(players)#
+#
+players <- players[-grep("Robin Soderling",players$player),]#
+players$player[grep("Edouard Roger-Vasselin",players$player)] <- "Edouard Roger?Vasselin"#
+#
+Activity <- lapply(players$player[1:100], function(name){#
+	print(name)#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})
+length(Activity)
+Result <- Activity[[1]]#
+#
+for(i in 2:length(Activity)) Result <- rbind(Result, Activity[[i]])
+Result$Prob <- Result$Wins/Result$Total					#
+Result <- Result[order(Result$Tournament),]
+unique(Result$Tournament)
+levels(Result$Tournament)
+Oz <- Result[grep("Australian Open",Result$Tournament),]
+Oz
+Tournaments <- unique(Result$Tournament)#
+#
+Oz <- Result[grep("Australian Open",Result$Tournament),]
+Tournaments[1]
+for(i in Tournaments[1]){#
+#
+	temp <- Activity[grep(i,Activity$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+	cor(Oz$Prob[index2], US$Prob[index1])#
+}
+for(i in Tournaments[1]){#
+#
+	temp <- Activity[grep(i,Activity$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       print(cor(Oz$Prob[index2], temp$Prob[index1]))#
+}
+for(i in Tournaments[1]){#
+#
+	temp <- Result[grep(i,Result$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       print(cor(Oz$Prob[index2], temp$Prob[index1]))#
+}
+for(i in Tournaments){#
+#
+	temp <- Result[grep(i,Result$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       print(cor(Oz$Prob[index2], temp$Prob[index1]))#
+}
+length(Tournaments)
+Tournaments
+Result <- Result[1:50,]
+Oz <- Result[grep("Australian Open",Result$Tournament),]#
+#
+for(i in Tournaments){#
+#
+	temp <- Result[grep(i,Result$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       print(cor(Oz$Prob[index2], temp$Prob[index1]))#
+}
+Activity <- lapply(players$player[1:50], function(name){#
+#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})#
+Result <- Activity[[1]]#
+#
+for(i in 2:length(Activity)) Result <- rbind(Result, Activity[[i]])#
+#
+Result$Prob <- Result$Wins/Result$Total					#
+Result <- Result[order(Result$Tournament),]#
+#
+Tournaments <- unique(Result$Tournament)#
+#
+Oz <- Result[grep("Australian Open",Result$Tournament),]#
+#
+for(i in Tournaments){#
+#
+	temp <- Result[grep(i,Result$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       print(cor(Oz$Prob[index2], temp$Prob[index1]))#
+}
+Correlation <- rep(0, length(Tournaments))#
+#
+for(i in Tournaments){#
+#
+	temp <- Result[grep(i,Result$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       Correlation[i] <- cor(Oz$Prob[index2], temp$Prob[index1])#
+}#
+#
+Tournament.Correlation <- data.frame(#
+	Correlation = Correlation,#
+	Tournaments = Tournaments#
+)
+Tournament.Correlation
+Correlation <- rep(0, length(Tournaments))
+Correlation
+Correlation <- rep(0, length(Tournaments))#
+#
+for(i in 1:length(Tournaments)){#
+#
+	temp <- Result[grep(Tournaments[i],Result$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       Correlation[i] <- cor(Oz$Prob[index2], temp$Prob[index1])#
+}#
+#
+Tournament.Correlation <- data.frame(#
+	Correlation = Correlation,#
+	Tournaments = Tournaments#
+)
+Tournament.Correlation
+Activity <- lapply(players$player[1:32], function(name){#
+#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})#
+Result <- Activity[[1]]#
+#
+for(i in 2:length(Activity)) Result <- rbind(Result, Activity[[i]])#
+#
+Result$Prob <- Result$Wins/Result$Total					#
+Result <- Result[order(Result$Tournament),]#
+#
+Tournaments <- unique(Result$Tournament)#
+#
+Oz <- Result[grep("Australian Open",Result$Tournament),]#
+Correlation <- rep(0, length(Tournaments))#
+#
+for(i in 1:length(Tournaments)){#
+#
+	temp <- Result[grep(Tournaments[i],Result$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       Correlation[i] <- cor(Oz$Prob[index2], temp$Prob[index1])#
+}#
+#
+Tournament.Correlation <- data.frame(#
+	Correlation = Correlation,#
+	Tournaments = Tournaments#
+)
+Tournament.Correlation
+Activity <- lapply(players$player[1:50], function(name){#
+#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})#
+Result <- Activity[[1]]#
+#
+for(i in 2:length(Activity)) Result <- rbind(Result, Activity[[i]])#
+#
+Result$Prob <- Result$Wins/Result$Total					#
+Result <- Result[order(Result$Tournament),]#
+#
+Tournaments <- unique(Result$Tournament)#
+#
+Oz <- Result[grep("Australian Open",Result$Tournament),]#
+Correlation <- rep(0, length(Tournaments))#
+#
+for(i in 1:length(Tournaments)){#
+#
+	temp <- Result[grep(Tournaments[i],Result$Tournament),]#
+#
+	index1 <- grep(paste(Oz$Player,sep="",collapse="|"),temp$Player)#
+       index2 <- grep(paste(temp$Player,sep="",collapse="|"),Oz$Player)#
+       Correlation[i] <- cor(Oz$Prob[index2], temp$Prob[index1])#
+}#
+#
+Tournament.Correlation <- data.frame(#
+	Correlation = Correlation,#
+	Tournaments = Tournaments#
+)
+Tournament.Correlation
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))#
+#
+Activity <- lapply(players$Player, function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+#	data2011 <- QueryPlayingActivity(name, 2011)#
+#	data <- rbind(data2012, data2011)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})
+save(Tournament.Correlation, file="~/Desktop/Tournament.RData")
+index1 <- c(which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==4&players$Seeded==1])))
+index1
+index2 <- c(which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==4&players$Seeded==1])))#
+index3 <- c(which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==4&players$Seeded==1])))#
+#
+index4 <- c(which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==4&players$Seeded==1])))#
+#
+q1 <- players[players$Quarter==1,][index1,]#
+q2 <- players[players$Quarter==2,][index2,]#
+q3 <- players[players$Quarter==3,][index3,]#
+q4 <- players[players$Quarter==4,][index4,]
+q1
+name <- "Radek Stepanek"
+data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name
+data
+Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+	data <- data[Masters,]
+data
+paste(data$Tournament,collapse="|")
+grep(paste(data$Tournament,collapse="|"),Tournament.Correlation$Tournament)
+w <- Tournament.Correlation$Cor[grep(paste(data$Tournament,collapse="|"),Tournament.Correlation$Tournament)]
+w
+Tournament.Correlation
+match(Tournament.Correlation$Tour, data$Tournament)
+i <- match(Tournament.Correlation$Tour, data$Tournament)
+i <- match(data$Tournament, Tournament.Correlation$Tour)
+i
+Tournament.Correlation$Tour[i]
+data(players)#
+#
+players <- players[-grep("Robin Soderling",players$player),]#
+players$player[grep("Edouard Roger-Vasselin",players$player)] <- "Edouard Roger?Vasselin"#
+#
+Activity <- lapply(players$player[1:50], function(name){#
+#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+data[Masters,]#
+})#
+Result <- Activity[[1]]#
+#
+for(i in 2:length(Activity)) Result <- rbind(Result, Activity[[i]])#
+#
+Result$Prob <- Result$Wins/Result$Total					#
+Result <- Result[order(Result$Tournament),]#
+#
+Tournaments <- unique(Result$Tournament)#
+#
+Oz <- Result[grep("Australian Open",Result$Tournament),]#
+Correlation <- rep(0, length(Tournaments))
+i <- 1
+temp <- Result[grep(Tournaments[i],Result$Tournament),]#
+#
+	index1 <- match(Oz$Player,temp$Player)#
+       index2 <- match(temp$Player,Oz$Player)
+index1
+index2
+Oz$Player[index2[is.na(index2)]]
+Oz$Player[index2[!is.na(index2)]]
+temp$Player[index1[!is.na(index1)]]
+for(i in 1:length(Tournaments)){#
+#
+	temp <- Result[grep(Tournaments[i],Result$Tournament),]#
+#
+	index1 <- match(Oz$Player,temp$Player)#
+       index2 <- match(temp$Player,Oz$Player)#
+       Correlation[i] <- cor(Oz$Prob[index2[!is.na(index2)]], temp$Prob[index1[!is.na(index1)]])#
+}#
+#
+Tournament.Correlation <- data.frame(#
+	Correlation = Correlation,#
+	Tournaments = Tournaments#
+)#
+#
+save(Tournament.Correlation, file="~/Desktop/Tournament.RData")
+players <- read.csv("~/Desktop/aussie2013.csv",colC=c("character","numeric"))#
+#
+Probs <- lapply(players$Player, function(name){#
+	data <- QueryPlayingActivity(name, 2012)#
+	data$Total <- data$Wins+data$Losses#
+	data$Player <- name#
+	# SUBSET MASTERS#
+	Masters <- grep("Masters|US Open|Australian Open|Wimbledon|Roland Garros",data$Tournament)#
+#
+	data <- data[Masters,]#
+	w <- Tournament.Correlation$Cor[match(data$Tournament, Tournament.Correlation$Tour)]#
+	data$prob <- data$Win/data$Total#
+sum(w*data$prob)/sum(w)#
+})
+Tournament.Correlation
+Probs
+unlist(Probs)
+players$prob <- unlist(Probs)
+index1 <- c(which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==4&players$Seeded==1])))#
+#
+index2 <- c(which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==4&players$Seeded==1])))#
+index3 <- c(which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==4&players$Seeded==1])))#
+#
+index4 <- c(which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==4&players$Seeded==1])))#
+#
+q1 <- players[players$Quarter==1,][index1,]#
+q2 <- players[players$Quarter==2,][index2,]#
+q3 <- players[players$Quarter==3,][index3,]#
+q4 <- players[players$Quarter==4,][index4,]
+q1
+q2
+q3
+players$prob <- 1-unlist(Probs)#
+#
+index1 <- c(which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==4&players$Seeded==1])))#
+#
+index2 <- c(which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==4&players$Seeded==1])))#
+index3 <- c(which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==4&players$Seeded==1])))#
+#
+index4 <- c(which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==4&players$Seeded==1])))#
+#
+q1 <- players[players$Quarter==1,][index1,]#
+q2 <- players[players$Quarter==2,][index2,]#
+q3 <- players[players$Quarter==3,][index3,]#
+q4 <- players[players$Quarter==4,][index4,]#
+sum(q1$Seed)#
+prod(q1$prob)#
+#
+sum(q2$Seed)#
+prod(q2$prob)#
+#
+sum(q3$Seed)#
+prod(q3$prob)#
+#
+sum(q4$Seed)#
+prod(q4$prob)
+index1 <- c(index1, 2:4)
+q1 <- players[players$Quarter==1,][index1,]
+q1
+players
+index2 <- c(which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==4&players$Seeded==1])))#
+#
+index2 <- c(index2, 34:36)#
+index3 <- c(which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==4&players$Seeded==1])))#
+#
+index3 <- c(index3, 93:95)#
+#
+index4 <- c(which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==4&players$Seeded==1])))#
+#
+index4 <- c(index4, 125:127)#
+#
+q1 <- players[players$Quarter==1,][index1,]#
+q2 <- players[players$Quarter==2,][index2,]#
+q3 <- players[players$Quarter==3,][index3,]#
+q4 <- players[players$Quarter==4,][index4,]
+q1
+q2
+index2 <- c(index2, 2:4)
+q2 <- players[players$Quarter==2,][index2,]
+q2
+index1 <- c(which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==1]==#
+						  min(players$Seed[players$Quarter==1&players$Group==4&players$Seeded==1])))#
+#
+index1 <- c(index1, 2:4)#
+#
+index2 <- c(which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==2]==#
+						  min(players$Seed[players$Quarter==2&players$Group==4&players$Seeded==1])))#
+#
+index2 <- c(index2, 2:4)#
+index3 <- c(which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==3]==#
+						  min(players$Seed[players$Quarter==3&players$Group==4&players$Seeded==1])))#
+#
+index3 <- c(index3, 29:31)#
+#
+index4 <- c(which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==2&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==3&players$Seeded==1])),#
+			which(players$Seed[players$Quarter==4]==#
+						  min(players$Seed[players$Quarter==4&players$Group==4&players$Seeded==1])))#
+#
+index4 <- c(index4, 29:31)#
+#
+q1 <- players[players$Quarter==1,][index1,]#
+q2 <- players[players$Quarter==2,][index2,]#
+q3 <- players[players$Quarter==3,][index3,]#
+q4 <- players[players$Quarter==4,][index4,]
+q1
+q2
+q3
+q4
+sum(q1$Seed)#
+prod(q1$prob)#
+#
+sum(q2$Seed)#
+prod(q2$prob)#
+#
+sum(q3$Seed)#
+prod(q3$prob)#
+#
+sum(q4$Seed)#
+prod(q4$prob)
+library(slidify)
+setwd("~/master/tutorial/meta/user2013/")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+install.packages("HSAUR")
+library("HSAUR")
+help(package="HSAUR")
+?smoking
+slidify("index.Rmd")
+slidify("index.Rmd")
+slidify("index.Rmd")
+?meta.MH
+library(rmeta)
+install.packages("rmeta")
+library(rmeta)
+?meta.MH
+names(smoking)
+?knitr
+?meta.MH
+slidify("index.Rmd")
+install.packages("metafor")
+install.packages("meta")
+quit("no")
