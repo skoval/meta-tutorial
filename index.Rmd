@@ -3,7 +3,7 @@ title       : Tutorial on Meta-Analysis
 subtitle    : useR! 2013
 author      : Stephanie Kovalchik
 job         : Research Fellow, National Cancer Institute
-framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+framework   : shower        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
 hitheme     : tomorrow      # 
 widgets     : mathjax            # {mathjax, quiz, bootstrap}
@@ -148,7 +148,7 @@ Colditz GA, et al. Efficacy of BCG vaccine in the prevention of tuberculosis. JA
 
 ### Fixed Effects
 
-- Normal assumption: <math>Y_i ~ N(\mu, V_i)</math>
+- Normal assumption: $Y_i ~ N(\mu, V_i)$
 
 Summary treatment effect:
 
@@ -158,15 +158,15 @@ $$
 
 Variance of treatment effect:
 
-<math>
+$
 V(\hat{\mu}) = 1/\sum W_i
-</math>
+$
 
 Trial contribution to weighted average:
 
-<math>
+$
 \lambda_i = W_i/\sum W_i
-</math>
+$
 ---
 
 ### Load and inspect *smoking* data
